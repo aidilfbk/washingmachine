@@ -3,10 +3,17 @@ print "Booting python script..."
 import RPi.GPIO as GPIO
 import time
 import datetime
+import sys
 
 from firebase import firebase
 from config import *
 from subprocess import check_output
+
+# Internet connectivity
+try:
+    import httplib
+except:
+    import http.client as httplib
 
 # Util functions
 current_milli_time = lambda: int(round(time.time() * 1000))
@@ -92,7 +99,24 @@ def exception_handler(request, exception):
 def response_callback(response):
     print response
 
+def have_internet():
+    conn = httplib.HTTPConnection("www.google.com", timeout=5)
+    try:
+        conn.request("HEAD", "/")
+        conn.close()
+        return True
+    except:
+        conn.close()
+        return False
+
+
 if __name__ == "__main__":
+	while not have_internet():
+            print "Waiting for internet to come online..."
+            time.sleep(1)
+            #print "No connection.. exiting.. supervisor please restart me."
+            #sys.exit(1)
+            
         print "Initializing Firebase connection"
         # Open up network conn to Firebase
         firebase = firebase.FirebaseApplication('https://tlaundry2.firebaseio.com', None)
