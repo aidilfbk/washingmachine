@@ -39,3 +39,6 @@ DRYERS = [
 	{	"pin":23, "name":"DRYER C (COIN)", "machinetype": DRYER, "paymenttype": PAY_COIN	},
 	{	"pin":18, "name":"DRYER D (COIN)", "machinetype": DRYER, "paymenttype": PAY_COIN	},
 ]
+
+# Unique device ID so each floor can have multiple Raspberry Pis collecting data and not overwrite other pi's data on Firebase
+PI_DEVICE_ID = None

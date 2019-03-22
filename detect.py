@@ -109,9 +109,28 @@ def have_internet():
         conn.close()
         return False
 
+def get_pi_serial():
+    # Extract serial from cpuinfo file
+    try:
+        with open('/proc/cpuinfo','r') as f:
+            for line in f:
+                if line[0:6] == 'Serial':
+                    cpuserial = line[10:26]
+                    return cpuserial
+    except:
+        return None
 
 if __name__ == "__main__":
-	while not have_internet():
+    try:
+        PI_DEVICE_ID
+    except NameError:
+        PI_DEVICE_ID = None
+    
+    if not PI_DEVICE_ID:
+        # Use Raspberry Pi's CPU serial number if config.py does not set an ID
+        PI_DEVICE_ID = get_pi_serial() or "dev-non-pi"
+    
+        while not have_internet():
             print "Waiting for internet to come online..."
             time.sleep(1)
             #print "No connection.. exiting.. supervisor please restart me."
@@ -145,9 +164,9 @@ if __name__ == "__main__":
 
                 print str(current_state)
 
-                current_state["ip"] = check_output(['hostname', '-I'])
+                current_state["ip-"+PI_DEVICE_ID] = check_output(['hostname', '-I'])
 
-                result = firebase.put_async('/', FLOOR_NUMBER, current_state, callback=response_callback)
+                result = firebase.patch_async('/'+FLOOR_NUMBER, current_state, callback=response_callback)
 
             except Exception as e:
                 print "Exception msg: " + str(e.message) + " args = " + str(e.args)
